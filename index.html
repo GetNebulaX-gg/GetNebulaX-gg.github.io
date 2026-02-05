@@ -950,7 +950,7 @@
 
         <div class="stats reveal">
         <div class="stat">
-            <div class="stat-value" data-target="300">0</div><span class="plus">+</span>
+            <div class="stat-value" data-target="300">0+</div>
             <div class="stat-label">Active Users</div>
         </div>
 
@@ -979,55 +979,58 @@
         </footer>
     </div>
 
-    <script>
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (!href || href === '#') return;
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        const reveals = document.querySelectorAll('.reveal');
-        const revealOnScroll = () => {
-            const windowHeight = window.innerHeight;
-            reveals.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                const revealPoint = 100;
-                if (elementTop < windowHeight - revealPoint) {
-                    element.classList.add('active');
-                }
-            });
-        };
-        window.addEventListener('scroll', revealOnScroll);
-        revealOnScroll();
-
-        function animateValue(element, start, end, duration, isDecimal = false) {
-            const range = end - start;
-            let startTime = null;
-            function step(timestamp) {
-                if (!startTime) startTime = timestamp;
-                const progress = Math.min((timestamp - startTime) / duration, 1);
-                const value = start + range * progress;
-                element.textContent = isDecimal ? value.toFixed(1) : Math.floor(value);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                } else {
-                    element.textContent = isDecimal ? end.toFixed(1) : end;
-                }
+<script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (!href || href === '#') return;
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-            window.requestAnimationFrame(step);
-        }
-
-        document.querySelectorAll('.stat-value').forEach(el => {
-            const target = parseFloat(el.getAttribute('data-target')) || 0;
-            const isDecimal = (el.getAttribute('data-target') || '').toString().includes('.');
-            animateValue(el, 0, target, 1400, isDecimal);
         });
-    </script>
+    });
+
+    const reveals = document.querySelectorAll('.reveal');
+    const revealOnScroll = () => {
+        const windowHeight = window.innerHeight;
+        reveals.forEach(element => {
+            const elementTop = element.getBoundingClientRect().top;
+            const revealPoint = 100;
+            if (elementTop < windowHeight - revealPoint) {
+                element.classList.add('active');
+            }
+        });
+    };
+    window.addEventListener('scroll', revealOnScroll);
+    revealOnScroll();
+
+    function animateValue(element, start, end, duration, isDecimal = false, plus = false) {
+        const range = end - start;
+        let startTime = null;
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            let value = start + range * progress;
+            element.textContent = isDecimal ? value.toFixed(1) : Math.floor(value);
+            if (plus) element.textContent += '+';
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                element.textContent = isDecimal ? end.toFixed(1) : end;
+                if (plus) element.textContent += '+';
+            }
+        }
+        window.requestAnimationFrame(step);
+    }
+
+    document.querySelectorAll('.stat-value').forEach(el => {
+        const target = parseFloat(el.getAttribute('data-target')) || 0;
+        const isDecimal = (el.getAttribute('data-target') || '').includes('.');
+        const plus = el.getAttribute('data-plus') === 'true';
+        animateValue(el, 0, target, 1400, isDecimal, plus);
+    });
+</script>
 </body>
 </html>
