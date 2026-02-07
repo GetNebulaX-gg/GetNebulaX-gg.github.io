@@ -949,17 +949,16 @@
             </div>
 
         <div class="stats reveal">
-        <div class="stat">
-            <div class="stat-value" data-target="300">0+</div>
-            <div class="stat-label">Active Users</div>
-        </div>
-
             <div class="stat">
-                <div class="stat-value" data-target="99.9">0</div>
+                <div class="stat-value" data-target="300" data-plus="true">0</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" data-target="99.9" data-suffix="%">0</div>
                 <div class="stat-label">Uptime</div>
             </div>
             <div class="stat">
-                <div class="stat-value" data-target="24">0</div>
+                <div class="stat-value" data-target="24" data-suffix="/7">0</div>
                 <div class="stat-label">Support</div>
             </div>
         </div>
@@ -1006,31 +1005,42 @@
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll();
 
-    function animateValue(element, start, end, duration, isDecimal = false, plus = false) {
-        const range = end - start;
-        let startTime = null;
-        function step(timestamp) {
-            if (!startTime) startTime = timestamp;
-            const progress = Math.min((timestamp - startTime) / duration, 1);
-            let value = start + range * progress;
-            element.textContent = isDecimal ? value.toFixed(1) : Math.floor(value);
-            if (plus) element.textContent += '+';
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            } else {
-                element.textContent = isDecimal ? end.toFixed(1) : end;
-                if (plus) element.textContent += '+';
-            }
+function animateValue(element, start, end, duration, options = {}) {
+    const { isDecimal = false, suffix = '', plus = false } = options;
+    const range = end - start;
+    let startTime = null;
+    
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        let value = start + range * progress;
+        
+        let displayValue = isDecimal ? value.toFixed(1) : Math.floor(value);
+        if (plus && progress >= 1) displayValue += '+';
+        if (suffix) displayValue += suffix;
+        
+        element.textContent = displayValue;
+        
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            let finalValue = isDecimal ? end.toFixed(1) : end;
+            if (plus) finalValue += '+';
+            if (suffix) finalValue += suffix;
+            element.textContent = finalValue;
         }
-        window.requestAnimationFrame(step);
     }
+    window.requestAnimationFrame(step);
+}
 
-    document.querySelectorAll('.stat-value').forEach(el => {
-        const target = parseFloat(el.getAttribute('data-target')) || 0;
-        const isDecimal = (el.getAttribute('data-target') || '').includes('.');
-        const plus = el.getAttribute('data-plus') === 'true';
-        animateValue(el, 0, target, 1400, isDecimal, plus);
-    });
+document.querySelectorAll('.stat-value').forEach(el => {
+    const target = parseFloat(el.getAttribute('data-target')) || 0;
+    const isDecimal = (el.getAttribute('data-target') || '').includes('.');
+    const plus = el.getAttribute('data-plus') === 'true';
+    const suffix = el.getAttribute('data-suffix') || '';
+    
+    animateValue(el, 0, target, 1400, { isDecimal, suffix, plus });
+});
 </script>
 </body>
 </html>
